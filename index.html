@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standards Dictionary</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <header>
+            <h1>Standards Dictionary</h1>
+            <p>Search terms, definitions, and references.</p>
+        </header>
+
+        <section class="search-section">
+            <input
+                type="search"
+                id="searchInput"
+                placeholder="Search the dictionary..."
+                autocomplete="off"
+            >
+        </section>
+
+        <nav class="alphabet" id="alphabet">
+            <!-- Letters will be added by JavaScript -->
+        </nav>
+
+        <section>
+            <div class="section-heading">
+                <h2 id="resultsHeading">A</h2>
+                <span id="resultCount"></span>
+            </div>
+
+            <div id="results">
+                <p class="loading">Loading dictionary...</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
