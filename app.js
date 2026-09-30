@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://ndqegqcxiuhkcpdxcpmw.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_ANON_KEY = "sb_publishable_mEMA6g9QbxCfUhOPMYvdPQ_2akcLCYq";
 
 const alphabet = document.getElementById("alphabet");
 const searchInput = document.getElementById("searchInput");
