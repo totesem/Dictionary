@@ -20,19 +20,33 @@ function formatDefinition(text) {
     for (const term of dictionaryTermList) {
         const escapedTerm = escapeRegExp(term);
 
+        const isAcronym =
+            term === term.toUpperCase() &&
+            term !== term.toLowerCase();
+
         const regex = new RegExp(
             `\\b${escapedTerm}\\b`,
-            "g"
+            isAcronym ? "g" : "gi"
         );
 
         formatted = formatted.replace(
             regex,
             match => {
-                if (match === match.toUpperCase() && match !== match.toLowerCase()) {
+                if (isAcronym) {
                     return `<em>${match}</em>`;
                 }
 
-                return match;
+                // Normal lowercase terms can appear lowercase
+                // or with normal sentence capitalization,
+                // but not as an all-uppercase acronym.
+                if (
+                    match === match.toUpperCase() &&
+                    match !== match.toLowerCase()
+                ) {
+                    return match;
+                }
+
+                return `<em>${match}</em>`;
             }
         );
     }
