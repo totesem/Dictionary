@@ -71,6 +71,8 @@ async function loadTerms() {
 
             offset += pageSize;
         }
+        initializeDictionaryLinks(allTerms);
+
 
         updateAlphabet();
         displayTerms();
@@ -173,7 +175,7 @@ function displayTerms() {
 
         const definition = document.createElement("div");
         definition.className = "term-definition";
-        definition.textContent = item.definition || "";
+        definition.innerHTML = formatDefinition(item.definition || "");
 
         const details = document.createElement("div");
         details.className = "term-details";
