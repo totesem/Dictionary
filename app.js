@@ -10,7 +10,7 @@ const resultCount = document.getElementById("resultCount");
 let selectedLetter = "A";
 let allTerms = [];
 
-// Create alphabet buttons
+// Build alphabet
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(letter => {
     const button = document.createElement("button");
 
@@ -18,14 +18,9 @@ let allTerms = [];
     button.textContent = letter;
     button.dataset.letter = letter;
 
-    // Only A is active during our test
-    if (letter !== "A") {
-        button.disabled = true;
-        button.style.opacity = "0.35";
-        button.style.cursor = "default";
-    }
-
     button.addEventListener("click", () => {
+        if (button.disabled) return;
+
         selectedLetter = letter;
 
         document.querySelectorAll(".letter").forEach(btn => {
@@ -40,19 +35,12 @@ let allTerms = [];
     alphabet.appendChild(button);
 });
 
-// Mark A active
-document.querySelector('[data-letter="A"]').classList.add("active");
-
-
-// Load A terms from Supabase
 async function loadTerms() {
-
     results.innerHTML = '<p class="loading">Loading dictionary...</p>';
 
     try {
-
         const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/dictionary?select=*&alpha%20letter=eq.a&order=term.asc`,
+            `${SUPABASE_URL}/rest/v1/dictionary?select=*&order=term.asc`,
             {
                 headers: {
                     "apikey": SUPABASE_ANON_KEY,
@@ -67,10 +55,10 @@ async function loadTerms() {
 
         allTerms = await response.json();
 
+        updateAlphabet();
         displayTerms();
 
     } catch (error) {
-
         console.error(error);
 
         results.innerHTML = `
@@ -81,13 +69,45 @@ async function loadTerms() {
     }
 }
 
+function updateAlphabet() {
+    const availableLetters = new Set(
+        allTerms
+            .map(item => (item["alpha letter"] || "").toUpperCase())
+            .filter(letter => letter)
+    );
 
-// Display terms
+    document.querySelectorAll(".letter").forEach(button => {
+        const letter = button.dataset.letter;
+
+        if (availableLetters.has(letter)) {
+            button.disabled = false;
+            button.style.opacity = "1";
+            button.style.cursor = "pointer";
+        } else {
+            button.disabled = true;
+            button.style.opacity = "0.35";
+            button.style.cursor = "default";
+        }
+    });
+
+    const selectedButton = document.querySelector(
+        `[data-letter="${selectedLetter}"]`
+    );
+
+    if (selectedButton && !selectedButton.disabled) {
+        selectedButton.classList.add("active");
+    }
+}
+
 function displayTerms() {
-
     const searchText = searchInput.value.trim().toLowerCase();
 
     const filtered = allTerms.filter(item => {
+        const itemLetter = (item["alpha letter"] || "").toUpperCase();
+
+        if (itemLetter !== selectedLetter) {
+            return false;
+        }
 
         if (!searchText) {
             return true;
@@ -103,7 +123,9 @@ function displayTerms() {
     });
 
     resultsHeading.textContent = selectedLetter;
-    resultCount.textContent = `${filtered.length} term${filtered.length === 1 ? "" : "s"}`;
+
+    resultCount.textContent =
+        `${filtered.length} term${filtered.length === 1 ? "" : "s"}`;
 
     if (filtered.length === 0) {
         results.innerHTML = `
@@ -117,7 +139,6 @@ function displayTerms() {
     results.innerHTML = "";
 
     filtered.forEach(item => {
-
         const card = document.createElement("div");
         card.className = "term";
 
@@ -152,10 +173,7 @@ function displayTerms() {
     });
 }
 
-
-// Build detail fields
 function makeDetail(label, value) {
-
     if (!value) {
         return "";
     }
@@ -166,10 +184,7 @@ function makeDetail(label, value) {
     `;
 }
 
-
-// Basic HTML escaping
 function escapeHtml(value) {
-
     return value
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -178,10 +193,6 @@ function escapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
-
-// Search as the user types
 searchInput.addEventListener("input", displayTerms);
 
-
-// Start
 loadTerms();
