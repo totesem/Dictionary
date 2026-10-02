@@ -168,17 +168,19 @@ function displayTerms() {
         const details = document.createElement("div");
         details.className = "term-details";
 
-        details.innerHTML = `
-            ${makeDetail("Source", item.source)}
-            ${makeDetail("Other Publication", item["other publication"])}
-            ${makeDetail("Label", item.label)}
-            ${makeDetail("Also Cited", item["also cited"])}
-            ${makeDetail("Related", item.related)}
-        `;
+        details.innerHTML = makeDetails(item);
 
         card.appendChild(termName);
         card.appendChild(definition);
         card.appendChild(details);
+
+        details.querySelectorAll(".detail-section-header").forEach(header => {
+            header.addEventListener("click", (event) => {
+                event.stopPropagation();
+
+                header.parentElement.classList.toggle("open");
+            });
+        });
 
         card.addEventListener("click", () => {
             card.classList.toggle("open");
@@ -188,13 +190,56 @@ function displayTerms() {
     });
 }
 
+function makeDetails(item) {
+    const hasReferences =
+        item.source ||
+        item["other publication"] ||
+        item["also cited"];
+
+    const hasRelated = item.related;
+
+    let html = "";
+
+    if (hasReferences) {
+        html += `
+            <div class="detail-section">
+                <div class="detail-section-header">
+                    References
+                </div>
+
+                <div class="detail-section-content">
+                    ${makeDetail("Source", item.source)}
+                    ${makeDetail("Other publication", item["other publication"])}
+                    ${makeDetail("Also cited?", item["also cited"])}
+                </div>
+            </div>
+        `;
+    }
+
+    if (hasRelated) {
+        html += `
+            <div class="detail-section">
+                <div class="detail-section-header">
+                    Related terms
+                </div>
+
+                <div class="detail-section-content">
+                    ${makeDetail("", item.related)}
+                </div>
+            </div>
+        `;
+    }
+
+    return html;
+}
+
 function makeDetail(label, value) {
     if (!value) {
         return "";
     }
 
     return `
-        <div class="detail-label">${label}</div>
+        ${label ? `<div class="detail-label">${label}</div>` : ""}
         <div>${escapeHtml(String(value))}</div>
     `;
 }
