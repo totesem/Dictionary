@@ -23,6 +23,8 @@ let allTerms = [];
 
         selectedLetter = letter;
 
+        searchInput.value = "";
+
         document.querySelectorAll(".letter").forEach(btn => {
             btn.classList.remove("active");
         });
@@ -118,27 +120,35 @@ function displayTerms() {
     const searchText = searchInput.value.trim().toLowerCase();
 
     const filtered = allTerms.filter(item => {
-        const itemLetter = (item["alpha letter"] || "").toUpperCase();
+        const term =
+            (item.term || "").toLowerCase();
 
-        if (itemLetter !== selectedLetter) {
-            return false;
+        const definition =
+            (item.definition || "").toLowerCase();
+
+        // If searching, search the entire dictionary
+        if (searchText) {
+            return (
+                term.includes(searchText) ||
+                definition.includes(searchText)
+            );
         }
 
-        if (!searchText) {
-            return true;
-        }
+        // Otherwise, show the selected letter
+        const itemLetter =
+            (item["alpha letter"] || "").toUpperCase();
 
-        const term = (item.term || "").toLowerCase();
-        const definition = (item.definition || "").toLowerCase();
-
-        return (
-            term.includes(searchText) ||
-            definition.includes(searchText)
-        );
+        return itemLetter === selectedLetter;
     });
 
-    resultsHeading.textContent = selectedLetter;
+    // Heading
+    if (searchText) {
+        resultsHeading.textContent = "Search results";
+    } else {
+        resultsHeading.textContent = selectedLetter;
+    }
 
+    // Count
     resultCount.textContent =
         `${filtered.length} term${filtered.length === 1 ? "" : "s"}`;
 
@@ -174,16 +184,16 @@ function displayTerms() {
         card.appendChild(definition);
         card.appendChild(details);
 
+        card.addEventListener("click", () => {
+            card.classList.toggle("open");
+        });
+
         details.querySelectorAll(".detail-section-header").forEach(header => {
             header.addEventListener("click", (event) => {
                 event.stopPropagation();
 
                 header.parentElement.classList.toggle("open");
             });
-        });
-
-        card.addEventListener("click", () => {
-            card.classList.toggle("open");
         });
 
         results.appendChild(card);
