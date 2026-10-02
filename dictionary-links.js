@@ -22,12 +22,18 @@ function formatDefinition(text) {
 
         const regex = new RegExp(
             `\\b${escapedTerm}\\b`,
-            "gi"
+            "g"
         );
 
         formatted = formatted.replace(
             regex,
-            match => `<em>${match}</em>`
+            match => {
+                if (match === match.toUpperCase() && match !== match.toLowerCase()) {
+                    return `<em>${match}</em>`;
+                }
+
+                return match;
+            }
         );
     }
 
