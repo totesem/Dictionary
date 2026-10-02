@@ -39,21 +39,36 @@ async function loadTerms() {
     results.innerHTML = '<p class="loading">Loading dictionary...</p>';
 
     try {
-        const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/dictionary?select=*&order=term.asc`,
-            {
-                headers: {
-                    "apikey": SUPABASE_ANON_KEY,
-                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+        allTerms = [];
+
+        let offset = 0;
+        const pageSize = 1000;
+
+        while (true) {
+            const response = await fetch(
+                `${SUPABASE_URL}/rest/v1/dictionary?select=*&order=term.asc&limit=${pageSize}&offset=${offset}`,
+                {
+                    headers: {
+                        "apikey": SUPABASE_ANON_KEY,
+                        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+                    }
                 }
+            );
+
+            if (!response.ok) {
+                throw new Error(`Supabase returned ${response.status}`);
             }
-        );
 
-        if (!response.ok) {
-            throw new Error(`Supabase returned ${response.status}`);
+            const page = await response.json();
+
+            allTerms.push(...page);
+
+            if (page.length < pageSize) {
+                break;
+            }
+
+            offset += pageSize;
         }
-
-        allTerms = await response.json();
 
         updateAlphabet();
         displayTerms();
