@@ -170,3 +170,13 @@ header p {
 .detail-section.open .detail-section-content {
     display: block;
 }
+
+.dictionary-link {
+    color: #4f6f8f;
+    text-decoration: none;
+}
+
+.dictionary-link:hover {
+    color: #365a78;
+    text-decoration: underline;
+}

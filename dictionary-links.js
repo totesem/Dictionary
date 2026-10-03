@@ -96,7 +96,10 @@ function formatDefinition(text, currentTerm) {
     const protectedData = protectAcronymExpansions(formatted);
     formatted = protectedData.text;
 
-    // Apply normal dictionary matching
+    // Replace dictionary terms with temporary placeholders first.
+    // This prevents later matches from seeing the HTML we create.
+    const replacements = [];
+
     for (const term of dictionaryTermList) {
         const escapedTerm = escapeRegExp(term);
 
@@ -114,7 +117,14 @@ function formatDefinition(text, currentTerm) {
             match => {
                 // Acronyms must match exactly as written
                 if (isAcronym) {
-                    return `<a href="#" class="dictionary-link" data-term="${escapeHtml(term)}"><em>${match}</em></a>`;;
+                    const token = `___DICTIONARY_LINK_${replacements.length}___`;
+
+                    replacements.push({
+                        token: token,
+                        html: `<a href="#" class="dictionary-link" data-term="${escapeHtml(term)}"><em>${match}</em></a>`
+                    });
+
+                    return token;
                 }
 
                 // Normal terms:
@@ -127,8 +137,23 @@ function formatDefinition(text, currentTerm) {
                     return match;
                 }
 
-                return `<a href="#" class="dictionary-link" data-term="${escapeHtml(term)}"><em>${match}</em></a>`;;
+                const token = `___DICTIONARY_LINK_${replacements.length}___`;
+
+                replacements.push({
+                    token: token,
+                    html: `<a href="#" class="dictionary-link" data-term="${escapeHtml(term)}"><em>${match}</em></a>`
+                });
+
+                return token;
             }
+        );
+    }
+
+    // Restore dictionary hyperlinks
+    for (const item of replacements) {
+        formatted = formatted.replace(
+            item.token,
+            item.html
         );
     }
 
@@ -150,7 +175,6 @@ function formatDefinition(text, currentTerm) {
 
     return formatted;
 }
-
 
 // Escape text before adding HTML
 function escapeHtml(value) {
