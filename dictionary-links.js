@@ -20,17 +20,15 @@ function protectAcronymExpansions(text) {
     const protectedPhrases = [];
 
     for (const acronym of acronymList) {
-        const letters = acronym.split("");
-
         const pattern = new RegExp(
-            `\\b(${letters.map(() => "[A-Za-z]+").join("\\s+")})\\s*\\(\\s*${escapeRegExp(acronym)}\\s*\\)`,
+            `\\b((?:[A-Za-z]+\\s+){1,5}[A-Za-z]+)\\s*\\(\\s*${escapeRegExp(acronym)}\\s*\\)`,
             "g"
         );
 
         text = text.replace(pattern, (match, phrase) => {
-            const phraseWords = phrase.split(/\s+/);
+            const words = phrase.trim().split(/\s+/);
 
-            const initials = phraseWords
+            const initials = words
                 .map(word => word.charAt(0).toUpperCase())
                 .join("");
 
@@ -38,14 +36,14 @@ function protectAcronymExpansions(text) {
                 return match;
             }
 
-            const token = `___ACRONYM_${protectedPhrases.length}___`;
+            const token = `___ACRONYM_EXPANSION_${protectedPhrases.length}___`;
 
             protectedPhrases.push({
                 token: token,
                 text: phrase
             });
 
-            // Keep the parenthetical acronym in the text
+            // Keep (ACRONYM) available to the normal acronym matcher
             return `${token} (${acronym})`;
         });
     }
@@ -56,8 +54,6 @@ function protectAcronymExpansions(text) {
     };
 }
 
-
-// Find dictionary terms in a piece of text
 function formatDefinition(text, currentTerm) {
     if (!text) {
         return "";
@@ -65,46 +61,54 @@ function formatDefinition(text, currentTerm) {
 
     let formatted = escapeHtml(text);
 
-    const isAcronym =
+    const isCurrentTermAcronym =
         currentTerm === currentTerm.toUpperCase() &&
         currentTerm !== currentTerm.toLowerCase();
 
     let protectedFirstClause = "";
 
-    // For acronym entries, protect everything before the first semicolon
-    if (isAcronym) {
+    // Acronym entries: protect everything before the first semicolon
+    if (isCurrentTermAcronym) {
         const semicolonIndex = formatted.indexOf(";");
 
         if (semicolonIndex !== -1) {
             protectedFirstClause = formatted.substring(0, semicolonIndex);
+
             formatted =
                 "___FIRST_CLAUSE___" +
                 formatted.substring(semicolonIndex);
         }
     }
 
+    // Protect explicit acronym expansions such as:
+    // American Gas Association (AGA)
+    const protectedData = protectAcronymExpansions(formatted);
+    formatted = protectedData.text;
+
+    // Apply normal dictionary matching
     for (const term of dictionaryTermList) {
         const escapedTerm = escapeRegExp(term);
 
-        const termIsAcronym =
+        const isAcronym =
             term === term.toUpperCase() &&
             term !== term.toLowerCase();
 
         const regex = new RegExp(
             `\\b${escapedTerm}\\b`,
-            termIsAcronym ? "g" : "gi"
+            isAcronym ? "g" : "gi"
         );
 
         formatted = formatted.replace(
             regex,
             match => {
                 // Acronyms must match exactly as written
-                if (termIsAcronym) {
+                if (isAcronym) {
                     return `<em>${match}</em>`;
                 }
 
-                // Normal terms can match lowercase or sentence case,
-                // but not all-uppercase.
+                // Normal terms:
+                // lowercase and sentence case = match
+                // all uppercase = don't match
                 if (
                     match === match.toUpperCase() &&
                     match !== match.toLowerCase()
@@ -117,7 +121,15 @@ function formatDefinition(text, currentTerm) {
         );
     }
 
-    // Restore the protected acronym definition clause
+    // Restore explicit acronym expansions
+    for (const item of protectedData.protectedPhrases) {
+        formatted = formatted.replace(
+            item.token,
+            item.text
+        );
+    }
+
+    // Restore the protected first clause
     if (protectedFirstClause) {
         formatted = formatted.replace(
             "___FIRST_CLAUSE___",
