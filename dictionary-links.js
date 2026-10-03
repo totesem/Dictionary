@@ -1,5 +1,6 @@
 let dictionaryTermList = [];
 let acronymList = [];
+let dictionaryTermMap = new Map();
 
 // Build the list of dictionary terms after the dictionary has loaded
 function initializeDictionaryLinks(terms) {
@@ -14,6 +15,16 @@ function initializeDictionaryLinks(terms) {
             term !== term.toLowerCase()
         );
     });
+
+    dictionaryTermMap = new Map();
+
+    for (const item of terms) {
+        const term = (item.term || "").trim().toLowerCase();
+
+        if (term) {
+            dictionaryTermMap.set(term, item);
+        }
+    }
 }
 
 function protectAcronymExpansions(text) {
@@ -103,7 +114,7 @@ function formatDefinition(text, currentTerm) {
             match => {
                 // Acronyms must match exactly as written
                 if (isAcronym) {
-                    return `<em>${match}</em>`;
+                    return `<a href="#" class="dictionary-link" data-term="${escapeHtml(term)}"><em>${match}</em></a>`;;
                 }
 
                 // Normal terms:
@@ -116,7 +127,7 @@ function formatDefinition(text, currentTerm) {
                     return match;
                 }
 
-                return `<em>${match}</em>`;
+                return `<a href="#" class="dictionary-link" data-term="${escapeHtml(term)}"><em>${match}</em></a>`;;
             }
         );
     }
