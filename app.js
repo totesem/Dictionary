@@ -175,7 +175,10 @@ function displayTerms() {
 
         const definition = document.createElement("div");
         definition.className = "term-definition";
-        definition.innerHTML = formatDefinition(item.definition || "");
+        definition.innerHTML = formatDefinition(
+            item.definition || "",
+            item.term || ""
+        );
 
         const details = document.createElement("div");
         details.className = "term-details";
