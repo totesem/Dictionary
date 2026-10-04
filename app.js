@@ -88,6 +88,69 @@ async function loadTerms() {
     }
 }
 
+document.addEventListener("click", event => {
+    const link = event.target.closest(".dictionary-link");
+
+    if (!link) {
+        return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    event.preventDefault();
+
+    const term = link.dataset.term;
+
+    const item = dictionaryTermMap.get(term.toLowerCase());
+
+    if (!item) {
+        return;
+    }
+
+    const letter =
+        (item["alpha letter"] || "").toUpperCase();
+
+    selectedLetter = letter;
+
+    document.querySelectorAll(".letter").forEach(button => {
+        button.classList.remove("active");
+    });
+
+    const letterButton = document.querySelector(
+        `[data-letter="${letter}"]`
+    );
+
+    if (letterButton) {
+        letterButton.classList.add("active");
+    }
+
+    searchInput.value = "";
+
+    displayTerms();
+
+    const cards = document.querySelectorAll(".term");
+
+    for (const card of cards) {
+        const name = card.querySelector(".term-name");
+
+        if (
+            name &&
+            name.textContent.trim().toLowerCase() ===
+            term.toLowerCase()
+        ) {
+            card.classList.add("open");
+
+            card.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+            break;
+        }
+    }
+});
+
 function updateAlphabet() {
     const availableLetters = new Set(
         allTerms
