@@ -141,7 +141,7 @@ document.addEventListener("click", event => {
             card.classList.add("open");
 
             card.scrollIntoView({
-                behavior: "smooth",
+                behavior: "auto",
                 block: "center"
             });
 
