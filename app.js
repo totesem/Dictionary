@@ -98,7 +98,6 @@ document.addEventListener("click", event => {
     event.preventDefault();
     event.stopPropagation();
 
-    event.preventDefault();
 
     const term = link.dataset.term;
 
