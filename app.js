@@ -180,6 +180,14 @@ function updateAlphabet() {
     }
 }
 
+function getGraphicUrl(filename) {
+    if (!filename) {
+        return "";
+    }
+
+    return `${SUPABASE_URL}/storage/v1/object/public/dictionary-graphics/${encodeURIComponent(filename)}`;
+}
+
 function displayTerms() {
     const searchText = searchInput.value.trim().toLowerCase();
 
@@ -236,11 +244,27 @@ function displayTerms() {
         termName.textContent = item.term || "";
 
         const definition = document.createElement("div");
-        definition.className = "term-definition";
-        definition.innerHTML = formatDefinition(
-            item.definition || "",
-            item.term || ""
-        );
+            definition.className = "term-definition";
+
+            definition.innerHTML = formatDefinition(
+                item.definition || "",
+                item.term || ""
+            );
+
+            if (item.graphic) {
+                const graphic = document.createElement("img");
+
+                graphic.className = "term-graphic";
+                graphic.src = getGraphicUrl(item.graphic);
+                graphic.alt = item.term || "Dictionary graphic";
+                graphic.loading = "lazy";
+
+                graphic.addEventListener("error", () => {
+                    graphic.remove();
+                });
+
+                definition.appendChild(graphic);
+}
 
         const details = document.createElement("div");
         details.className = "term-details";
