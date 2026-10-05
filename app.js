@@ -330,6 +330,14 @@ function escapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
-searchInput.addEventListener("input", displayTerms);
+let searchTimeout;
+
+searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(() => {
+        displayTerms();
+    }, 200);
+});
 
 loadTerms();
